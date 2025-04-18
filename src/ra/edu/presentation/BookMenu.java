@@ -1,12 +1,18 @@
 package ra.edu.presentation;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 import ra.edu.business.service.BookService;
 import ra.edu.business.model.Book;
+import ra.edu.validate.BookValidator;
 
 public class BookMenu {
     private static final Scanner scanner = new Scanner(System.in);
     private static final BookService bookService = new BookService();
+
+
     public static void displayBookMenu(Scanner scanner) {
+        List<Book> bookList = new ArrayList<>();
         while (true) {
             System.out.println("\n--- QUẢN LÝ SÁCH ---");
             System.out.println("1. Thêm sách");
@@ -21,16 +27,20 @@ public class BookMenu {
 
             switch (choice) {
                 case 1:
-                    Book newBook = inputBookInfo();
+                    Book newBook = inputBookInfo(bookList);
                     bookService.addBook(newBook);
                     break;
                 case 2:
+                    bookService.updateBook();
                     break;
                 case 3:
+                    bookService.deleteBookInteractive();
                     break;
                 case 4:
+                    bookService.searchBooksByTitle();
                     break;
                 case 5:
+                    bookService.sortBooksByTitle();
                     break;
                 case 6:
                     bookService.displayAllBooks();
@@ -43,18 +53,21 @@ public class BookMenu {
         }
     }
 
-    private static Book inputBookInfo() {
+    private static Book inputBookInfo(List<Book> bookList) {
         Book book = new Book();
-        System.out.print("Tiêu đề: ");
-        book.setTitle(scanner.nextLine());
-        System.out.print("Tác giả: ");
-        book.setAuthor(scanner.nextLine());
-        System.out.print("Thể loại: ");
-        book.setCategoty(scanner.nextLine());
-        System.out.print("Số lượng: ");
-        book.setQuantityBook(Integer.parseInt(scanner.nextLine()));
-        System.out.print("Năm xuất bản: ");
-        book.setPublishYear(Integer.parseInt(scanner.nextLine()));
+
+        System.out.println("=== Nhập thông tin sách mới ===");
+        book.setTitle(BookValidator.validateUniqueTitle(scanner, bookList));
+
+        book.setAuthor(BookValidator.validateLength("Tác giả", scanner, 3, 50));
+
+        book.setCategoty(BookValidator.validateLength("Thể loại", scanner, 3, 30));
+
+        book.setQuantityBook(BookValidator.validateInt("Số lượng", scanner, 0, Integer.MAX_VALUE));
+
+        book.setPublishYear(BookValidator.validateInt("Năm xuất bản", scanner, 1900, java.time.LocalDate.now().getYear()));
+
         return book;
     }
+
 }
